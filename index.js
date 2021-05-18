@@ -53,17 +53,7 @@ let state = {
     },
   ],
 
-  cartItems :[
-    // {
-    //   id: "001-beetroot",
-    //   quantity: 1
-    //   },
-    // {
-    //   id: "002-carrot",
-    //   quantity: 1
-    //   }
-
-  ]
+  cartItems :[]
   
 };
 
@@ -133,10 +123,14 @@ function minusQuantity(product){
 }
 
 function renderAllCartItems(){
+  getServerCart()
+  .then(function(serverCart){
+    state.cartItems = serverCart
 
-  for (item of state.cartItems){
-    renderCartItem(item)
-  }
+    state.cartItems.map(renderCartItem)
+    
+  })
+
 }
 
 function renderCartItem(cartItem){
@@ -194,39 +188,46 @@ function addNewProductToCart(product){
       quantity: 1
       }
 
-    state.cartItems.push(cartItem)
+    postItemToServer(cartItem)
+      .then(function(serverItem){
+        state.cartItems.push(serverItem)
+      })
+      .then(function(){
+        updateTotal()
+      })
 
+      
+    
     return cartItem
-}
-
-function updateProduct(updatedProduct){
-  for (oldItem of state.items){
-    if (oldItem.id === updatedProduct.id){
-      oldItem = updatedProduct
-    }
-  }
-
-  renderAllCartItems(updatedProduct)
 }
 
 function updateCartItem(updatedItem){
   let itemIndex = state.cartItems.findIndex(function(object){
     return object.id === updatedItem.id
-  })
-    state.cartItems[itemIndex] = updatedItem
+    })
+  let itemLi = document.getElementById(`${updatedItem.id}`)
 
-    let itemLi = document.getElementById(`${updatedItem.id}`)
-    itemLi.remove()
-
-  if(updatedItem.quantity >= 1){
-    renderCartItem(updatedItem)  
+  if(updatedItem.quantity >= 1){  
+    patchCartItemToServer(updatedItem)
+    .then(function(serverItem){
+        
+        state.cartItems[itemIndex] = serverItem
+    
+        let itemQuantity = itemLi.querySelector(".quantity-text")
+        itemQuantity.innerText = serverItem.quantity
+    })
+    .then(function(){
+      updateTotal()
+    })
   }
-
-  if(updatedItem.quantity ===0 ){
-    state.cartItems.splice(itemIndex)
-  }
-
-  updateTotal()
+  if(updatedItem.quantity === 0 ){
+      delItemFromServer(updatedItem)
+        .then(function(){
+          state.cartItems.splice(itemIndex)
+          itemLi.remove()
+          updateTotal()
+        })
+    }
 }
 
 function updateTotal(){
@@ -239,7 +240,7 @@ function updateTotal(){
     let productDetail = state.products.find(function(product){
       return product.id === item.id
     })
-
+    
     totalPrice = totalPrice + productDetail.price * item.quantity
   }
 
@@ -247,5 +248,80 @@ function updateTotal(){
 
 }
 
-renderAllCartItems()
-renderAllProducts()
+function getServerCart(){
+  return fetch("http://localhost:3000/cartItems")
+    .then(function(response){
+        return response.json()
+    })
+    .catch((error) => {
+        console.log(error)
+        alert("There is something wrong.....")
+    });
+}
+
+
+function postItemToServer(item){
+return  fetch(`http://localhost:3000/cartItems/`, {
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify(item)
+    })
+    .then(response => response.json())
+    .catch((error) => {
+      console.log(error)
+      alert("There is something wrong.....")
+    });  
+    
+
+}
+
+function patchCartItemToServer(item){
+  
+ return fetch(`http://localhost:3000/cartItems/${item.id}`, {
+        method:"PATCH",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body: JSON.stringify(item)
+    })
+    .then(response => response.json())
+    .catch((error) => {
+      console.log(error)
+      alert("There is something wrong.....")
+    });  
+    
+}
+
+function delItemFromServer(item){
+ return fetch(`http://localhost:3000/cartItems/${item.id}`, {
+        method:"DELETE"
+    })
+    .catch((error) => {
+      console.log(error)
+      alert("There is something wrong.....")
+    }); 
+}
+
+// function emptyServerCart(){
+// return  fetch("http://localhost:3000/cartItems")
+//     .then(response => response.json())
+//     .then(function(oldItemsArray){
+//       for (oldItem of oldItemsArray){
+//         delItemFromServer(oldItem)
+//       }
+//     })
+//     .catch((error) => {
+//         console.log(error)
+//         alert("There is something wrong.....")
+//       });
+// }
+
+  renderAllProducts()
+  renderAllCartItems()
+  
+
+
+
+
