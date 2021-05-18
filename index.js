@@ -99,7 +99,7 @@ function renderProduct(product){
     if (itemIndex === -1){
     newCartItem = addNewProductToCart(product)
     renderCartItem(newCartItem)
-    
+    updateTotal()
     }
     else{
     
@@ -118,6 +118,7 @@ function addQuantity(product){
   updatedCartItem.quantity ++
  
   updateCartItem(updatedCartItem)
+  
 }
 
 function minusQuantity(product){
@@ -128,6 +129,7 @@ function minusQuantity(product){
   updatedCartItem.quantity --
  
   updateCartItem(updatedCartItem)
+  
 }
 
 function renderAllCartItems(){
@@ -213,15 +215,37 @@ function updateCartItem(updatedItem){
   })
     state.cartItems[itemIndex] = updatedItem
 
-  let itemLi = document.getElementById(`${updatedItem.id}`)
-  itemLi.remove()
-
+    let itemLi = document.getElementById(`${updatedItem.id}`)
+    itemLi.remove()
 
   if(updatedItem.quantity >= 1){
     renderCartItem(updatedItem)  
   }
+
+  if(updatedItem.quantity ===0 ){
+    state.cartItems.splice(itemIndex)
+  }
+
+  updateTotal()
 }
 
+function updateTotal(){
+  let totalEl = document.querySelector(".total-number")
+  
+  let totalPrice = 0
+
+  for(item of state.cartItems){
+  
+    let productDetail = state.products.find(function(product){
+      return product.id === item.id
+    })
+
+    totalPrice = totalPrice + productDetail.price * item.quantity
+  }
+
+  totalEl.innerText = `£${totalPrice.toFixed(2)}`
+
+}
 
 renderAllCartItems()
 renderAllProducts()
