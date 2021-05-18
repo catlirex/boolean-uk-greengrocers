@@ -53,17 +53,13 @@ let state = {
     },
   ],
 
-  cartItem :[
+  cartItems :[
     // {
     //   id: "001-beetroot",
-    //   name: "beetroot",
-    //   price: 0.35,
     //   quantity: 1
     //   },
     // {
     //   id: "002-carrot",
-    //   name: "carrot",
-    //   price: 0.35,
     //   quantity: 1
     //   }
 
@@ -97,15 +93,46 @@ function renderProduct(product){
 
   addBtn.addEventListener("click", function(event){
     event.preventDefault()
-    newCartItem = addProductToCart(product)
+
+    let itemIndex = checkExistCart(product)
+
+    if (itemIndex === -1){
+    newCartItem = addNewProductToCart(product)
     renderCartItem(newCartItem)
+    
+    }
+    else{
+    
+      addQuantity(product)
+    }
 
   })
 
 }
 
-function renderAllCartItem(){
-  for (item of state.cartItem){
+function addQuantity(product){
+  let updatedCartItem = state.cartItems.find(function(item){
+    return item.id === product.id
+  })
+
+  updatedCartItem.quantity ++
+ 
+  updateCartItem(updatedCartItem)
+}
+
+function minusQuantity(product){
+  let updatedCartItem = state.cartItems.find(function(item){
+    return item.id === product.id
+  })
+
+  updatedCartItem.quantity --
+ 
+  updateCartItem(updatedCartItem)
+}
+
+function renderAllCartItems(){
+
+  for (item of state.cartItems){
     renderCartItem(item)
   }
 }
@@ -113,23 +140,36 @@ function renderAllCartItem(){
 function renderCartItem(cartItem){
   let cartUl = document.querySelector(".cart--item-list")
   let cartLi = document.createElement("li")
+  cartLi.setAttribute("id", cartItem.id)
   cartUl.append(cartLi)
+
+  let productDetail = state.products.find(function(product){
+    return product.id === cartItem.id
+  })
 
   let cartItemImg = document.createElement("img")
   cartItemImg.setAttribute("class", "cart--item-icon")
   cartItemImg.setAttribute("src", `assets/icons/${cartItem.id}.svg`)
-  cartItemImg.setAttribute("alt", cartItem.name)
+  cartItemImg.setAttribute("alt", productDetail.name)
 
   let itemName = document.createElement("p")
-  itemName.innerText = cartItem.name
+  itemName.innerText = productDetail.name
 
   let minusBtn = document.createElement("button")
   minusBtn.setAttribute("class","quantity-btn remove-btn center")
   minusBtn.innerText = "-"
+  minusBtn.addEventListener("click", function(event){
+    event.preventDefault()
+    minusQuantity(cartItem)
+  })
 
   let plusBtn = document.createElement("button")
   plusBtn.setAttribute("class","quantity-btn remove-btn center")
   plusBtn.innerText = "+"
+  plusBtn.addEventListener("click", function(event){
+    event.preventDefault()
+    addQuantity(cartItem)
+  })
 
   let quantitySpan = document.createElement("span")
   quantitySpan.setAttribute("class", "quantity-text center")
@@ -138,17 +178,23 @@ function renderCartItem(cartItem){
   cartLi.append(cartItemImg, itemName, minusBtn, quantitySpan, plusBtn)
 }
 
-function addProductToCart(product){
+function checkExistCart(product){
+  const itemIndex = state.cartItems.findIndex(function(cartItem){
+    return cartItem.id === product.id
+  })
+
+  return itemIndex
+}
+
+function addNewProductToCart(product){
     let cartItem = {
       id: product.id,
-      name: product.name,
-      price: 0.35,
       quantity: 1
       }
 
-      updateCartItem(cartItem)
+    state.cartItems.push(cartItem)
 
-      return cartItem
+    return cartItem
 }
 
 function updateProduct(updatedProduct){
@@ -157,23 +203,25 @@ function updateProduct(updatedProduct){
       oldItem = updatedProduct
     }
   }
+
+  renderAllCartItems(updatedProduct)
 }
 
 function updateCartItem(updatedItem){
-  let itemIndex = state.cartItem.findIndex(function(object){
+  let itemIndex = state.cartItems.findIndex(function(object){
     return object.id === updatedItem.id
   })
+    state.cartItems[itemIndex] = updatedItem
 
-  if(itemIndex === -1){
-    state.cartItem.push(updatedItem)
-  }
-  else{
-    state.cartItem[itemIndex] = updatedItem
-  }
+  let itemLi = document.getElementById(`${updatedItem.id}`)
+  itemLi.remove()
 
-  
+
+  if(updatedItem.quantity >= 1){
+    renderCartItem(updatedItem)  
+  }
 }
 
 
-renderAllCartItem()
+renderAllCartItems()
 renderAllProducts()
