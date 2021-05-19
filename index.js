@@ -3,53 +3,73 @@ let state = {
     {
       id: "001-beetroot",
       name: "beetroot",
-      price: 0.35
+      price: 0.35,
+      type: "vegetable"
       },
     {
       id: "002-carrot",
       name: "carrot",
-      price: 1
+      price: 1,
+      type: "vegetable"
+
     },
     {
       id: "003-apple",
       name: "apple",
-      price: 0.5
+      price: 0.5,
+      type: "fruit"
+      
+
     },
     {
       id: "004-apricot",
       name: "apricot",
-      price: 0.5
+      price: 0.5,
+      type: "fruit"
+
     },
     {
       id: "005-avocado",
       name: "avocado",
-      price: 0.9
+      price: 0.9,
+      type: "fruit"
+
     },
     {
       id: "006-bananas",
       name: "bananas",
-      price: 0.7
+      price: 0.7,
+      type: "fruit"
+
     },
     {
       id: "007-bell-pepper",
       name: "bell-pepper",
-      price: 0.3
+      price: 0.3,
+      type: "vegetable"
+
     },
     
     {
       id: "008-berry",
       name: "berry",
-      price: 1.5
+      price: 1.5,
+      type: "fruit"
+
     },
     {
       id: "009-blueberry",
       name: "blueberry",
-      price: 1.5
+      price: 1.5,
+      type: "fruit"
+
     },
     {
       id: "010-eggplant",
       name: "eggplant",
-      price: 0.8
+      price: 0.8,
+      type: "vegetable"
+
     },
   ],
 
@@ -304,6 +324,57 @@ function delItemFromServer(item){
     }); 
 }
 
+function displayFilterSection(){
+  let h1El = document.querySelector("h1")
+
+  let filterPara = document.createElement("p")
+  filterPara.innerText = "Filter by: "
+  
+  let filterDiv = document.createElement("div")
+  filterDiv.setAttribute("class", "filter-container")
+
+  let vegBtn = document.createElement("button")
+  vegBtn.setAttribute("id", "vegetable")
+  vegBtn.innerText = "Vegetables"
+  vegBtn.addEventListener("click", function(event){
+    event.preventDefault()
+    filterProduct("vegetable")
+  })
+
+  let fruitBtn = document.createElement("button")
+  fruitBtn.setAttribute("id", "fruit")
+  fruitBtn.innerText = "Fruits"
+  fruitBtn.addEventListener("click", function(event){
+    event.preventDefault()
+    filterProduct("fruit")
+  })
+
+  filterDiv.append(filterPara, vegBtn,fruitBtn)
+  h1El.after(filterDiv)
+}
+
+function filterProduct(type){
+  let storeUl = document.querySelector(".store--item-list")
+  let allProductLi = storeUl.querySelectorAll("li")
+  allProductLi.forEach(removeLi)  
+  
+  for (product of state.products){
+    if (type === product.type) {
+      renderProduct(product)
+    }
+  }
+}
+
+function removeLi (liEl){
+  liEl.remove()
+}
+
+displayFilterSection()
+  renderAllProducts()
+  renderAllCartItems()
+  
+
+
 // function emptyServerCart(){
 // return  fetch("http://localhost:3000/cartItems")
 //     .then(response => response.json())
@@ -317,11 +388,5 @@ function delItemFromServer(item){
 //         alert("There is something wrong.....")
 //       });
 // }
-
-  renderAllProducts()
-  renderAllCartItems()
-  
-
-
 
 
