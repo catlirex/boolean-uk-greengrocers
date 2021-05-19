@@ -79,15 +79,16 @@ let state = {
 
 function renderAllProducts(){
   for (product of state.products){
-    renderProduct(product)
+    let productLi = renderProduct(product)
+
+    let itemUl = document.querySelector(".store--item-list")
+    itemUl.append(productLi)
   }
 }
 
 function renderProduct(product){
-  let itemUl = document.querySelector(".store--item-list")
   let productLi = document.createElement("li")
-  itemUl.append(productLi)
-
+  
   let productImgDiv = document.createElement("div")
   productImgDiv.setAttribute("class","store--item-icon")
 
@@ -98,8 +99,6 @@ function renderProduct(product){
 
   let addBtn = document.createElement("button")
   addBtn.innerText = "Add to cart"
-
-  productLi.append(productImgDiv, addBtn)
 
   addBtn.addEventListener("click", function(event){
     event.preventDefault()
@@ -118,6 +117,8 @@ function renderProduct(product){
 
   })
 
+  productLi.append(productImgDiv, addBtn)
+  return productLi
 }
 
 function addQuantity(product){
@@ -324,7 +325,7 @@ function delItemFromServer(item){
     }); 
 }
 
-function displayFilterSection(){
+function displayFilterSortSection(){
   let h1El = document.querySelector("h1")
 
   let filterPara = document.createElement("p")
@@ -342,7 +343,6 @@ function displayFilterSection(){
   })
 
   let fruitBtn = document.createElement("button")
-  fruitBtn.setAttribute("id", "fruit")
   fruitBtn.innerText = "Fruits"
   fruitBtn.addEventListener("click", function(event){
     event.preventDefault()
@@ -351,6 +351,59 @@ function displayFilterSection(){
 
   filterDiv.append(filterPara, vegBtn,fruitBtn)
   h1El.after(filterDiv)
+
+  let sortPara = document.createElement("p")
+  sortPara.innerText = "Sort by: "
+
+  let sortDiv = document.createElement("div")
+  sortDiv.setAttribute("class", "filter-container")
+
+  let lowPriceBtn = document.createElement("button")
+  lowPriceBtn.innerText = "Lowest price"
+  lowPriceBtn.addEventListener("click", function(event){
+    event.preventDefault()
+    sortProductByPrice()
+
+    let storeUl = document.querySelector(".store--item-list")
+    let allProductLi = storeUl.querySelectorAll("li")
+    allProductLi.forEach(removeLi)  
+
+    for(product of state.products){
+    let productLi = renderProduct(product)
+    let itemUl = document.querySelector(".store--item-list")
+    itemUl.append(productLi)
+    }
+  })
+
+  let highPriceBtn = document.createElement("button")
+  highPriceBtn.innerText = "Highest price"
+  highPriceBtn.addEventListener("click", function(event){
+    event.preventDefault()
+    sortProductByPrice()
+
+    let storeUl = document.querySelector(".store--item-list")
+    let allProductLi = storeUl.querySelectorAll("li")
+    allProductLi.forEach(removeLi)  
+
+    for(product of state.products){
+    let productLi = renderProduct(product)
+    let itemUl = document.querySelector(".store--item-list")
+    itemUl.prepend(productLi)
+    }
+  })
+  sortDiv.append(sortPara, lowPriceBtn, highPriceBtn)
+  h1El.after(sortDiv)
+
+}
+
+
+
+function sortProductByPrice(){
+  state.products.sort(function(a, b) {
+    return a.price - b.price;
+  });
+
+  console.log(state.products)
 }
 
 function filterProduct(type){
@@ -360,7 +413,9 @@ function filterProduct(type){
   
   for (product of state.products){
     if (type === product.type) {
-      renderProduct(product)
+      let productLi = renderProduct(product)
+      let itemUl = document.querySelector(".store--item-list")
+      itemUl.append(productLi)
     }
   }
 }
@@ -369,7 +424,7 @@ function removeLi (liEl){
   liEl.remove()
 }
 
-displayFilterSection()
+  displayFilterSortSection()
   renderAllProducts()
   renderAllCartItems()
   
